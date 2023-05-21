@@ -6,11 +6,11 @@ const Btn = styled.button`
     border: 2px solid #cecece;
     border-radius: 5px;
     cursor: pointer;
-    transition: box-shadow 0.25s ease-in-out, border 0.25s ease-in-out;
+    transition: box-shadow 0.25s ease, border 0.25s ease;
 
     &:hover {
         border: 2px solid transparent;
-        box-shadow: -1px 1px 4px #00d8ff, 1px 1px 4px #00d8ff;
+        box-shadow: -1px 1px 10px #00d8ff, 1px 1px 10px #00d8ff;
     }
 `;
 

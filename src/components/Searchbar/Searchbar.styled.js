@@ -25,7 +25,7 @@ const Header = styled.header`
         }
         &:focus-visible {
             border: 2px solid transparent;
-            box-shadow: -1px 1px 4px #00d8ff, 1px 1px 4px #00d8ff;
+            box-shadow: -1px 1px 7px #00d8ff, 1px 1px 7px #00d8ff;
         }
     }
 
