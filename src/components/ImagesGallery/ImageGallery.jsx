@@ -1,11 +1,14 @@
+import ImageService from 'API/ImageService';
+import Button from 'components/Button/Button';
+import ImageGalleryItem from 'components/ImageGalleryItem/ImageGalleryItem';
+import Loader from 'components/Loader/Loader';
+import Modal from 'components/Modal/Modal';
+import Searchbar from 'components/Searchbar/Searchbar';
+import countTotalPage from 'helpers/countTotalPage';
 import { Component } from 'react';
-import ImageService from '../../API/ImageService';
-import Button from '../Button/Button';
-import ImageGalleryItem from '../ImageGalleryItem/ImageGalleryItem';
-import Loader from '../Loader/Loader';
-import Modal from '../Modal/Modal';
-import Searchbar from '../Searchbar/Searchbar';
 import Gallery from './ImageGallery.styled';
+
+const PER_PAGE = 12;
 
 class ImageGallery extends Component {
     state = {
@@ -17,6 +20,7 @@ class ImageGallery extends Component {
         searchQuery: '',
         page: 1,
         totalHits: null,
+        limit: null,
     };
 
     componentDidUpdate(prevProps, prevState) {
@@ -28,7 +32,6 @@ class ImageGallery extends Component {
             this.setState({ isLoading: true });
             ImageService.fetchImagesByKeyword(trimmedQuery, this.state.page)
                 .then(data => {
-                    console.log('data', data);
                     this.setState(prev => {
                         if (prev.images.length)
                             return {
@@ -44,10 +47,14 @@ class ImageGallery extends Component {
     }
 
     handleSearchSubmit = searchQuery => {
-        this.setState({ searchQuery, page: 1, images: [] });
+        this.setState({ searchQuery, page: 1, images: [], limit: true });
     };
 
     handleLoadMoreBtn = () => {
+        const limit = countTotalPage(this.state.totalHits, PER_PAGE);
+        if (this.state.page === limit) {
+            this.setState({ limit: false });
+        }
         this.setState({ page: this.state.page + 1 });
     };
 
@@ -67,8 +74,8 @@ class ImageGallery extends Component {
             isModalVisible,
             largeImageUrl,
             totalHits,
+            limit,
         } = this.state;
-        console.log('total', totalHits);
 
         return (
             <>
@@ -89,7 +96,7 @@ class ImageGallery extends Component {
                 )}
                 {totalHits === 0 && <h4>No images found</h4>}
                 {isLoading && <Loader />}
-                {Boolean(images.length) && !isLoading && (
+                {Boolean(images.length) && !isLoading && limit && (
                     <Button onClick={this.handleLoadMoreBtn}>Load more</Button>
                 )}
                 {isModalVisible && (

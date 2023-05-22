@@ -20,6 +20,7 @@ const Searchbar = ({ onSubmit }) => {
                         autoComplete='on'
                         autoFocus
                         placeholder='Search images and photos'
+                        required
                     />
                     <button>
                         <FcSearch size={24} />

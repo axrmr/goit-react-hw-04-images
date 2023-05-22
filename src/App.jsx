@@ -1,5 +1,5 @@
+import ImageGallery from 'components/ImagesGallery/ImageGallery';
 import './App.css';
-import ImageGallery from './components/ImagesGallery/ImageGallery';
 import ReactLogo from '/public/ReactLogo/ReactLogo';
 
 const App = () => {
