@@ -3,7 +3,7 @@ import { defineConfig } from 'vite';
 
 // https://vitejs.dev/config/
 export default defineConfig({
-    base: '/goit-react-hw-03-image-finder/',
+    base: '/goit-react-hw-04-images/',
     plugins: [react()],
     resolve: {
         alias: {

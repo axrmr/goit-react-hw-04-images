@@ -5,109 +5,95 @@ import Loader from 'components/Loader/Loader';
 import Modal from 'components/Modal/Modal';
 import Searchbar from 'components/Searchbar/Searchbar';
 import countTotalPage from 'helpers/countTotalPage';
-import { Component } from 'react';
+import { useEffect, useState } from 'react';
 import Gallery from './ImageGallery.styled';
 
 const PER_PAGE = 12;
 
-class ImageGallery extends Component {
-    state = {
-        images: [],
-        error: '',
-        isLoading: false,
-        largeImageUrl: '',
-        isModalVisible: false,
-        searchQuery: '',
-        page: 1,
-        totalHits: null,
-        limit: null,
+const ImageGallery = () => {
+    const [images, setImages] = useState([]);
+    const [error, setError] = useState('');
+    const [isLoading, setIsLoading] = useState(false);
+    const [largeImageUrl, setLargeImageUrl] = useState('');
+    const [isModalVisible, setIsModalVisible] = useState(false);
+    const [searchQuery, setSearchQuery] = useState('');
+    const [page, setPage] = useState(1);
+    const [totalHits, setTotalHits] = useState(null);
+    const [limit, setLimit] = useState(null);
+
+    useEffect(() => {
+        if (!searchQuery) return;
+
+        setIsLoading(true);
+        ImageService.fetchImagesByKeyword(searchQuery, page)
+            .then(data => {
+                setImages(prev => {
+                    if (!prev.length) {
+                        return data.hits;
+                    }
+                    return [...prev, ...data.hits];
+                });
+                setTotalHits(data.totalHits);
+            })
+            .catch(err => setError(err.data))
+            .finally(() => setIsLoading(false));
+
+        setIsLoading(true);
+    }, [searchQuery, page]);
+
+    const handleSearchSubmit = e => {
+        e.preventDefault();
+        setSearchQuery(e.target.searchQuery.value);
+        setPage(1);
+        setImages([]);
+        setLimit(true);
+        e.target.reset();
     };
 
-    componentDidUpdate(prevProps, prevState) {
-        const trimmedQuery = this.state.searchQuery.trim();
-        if (
-            (prevState.searchQuery !== trimmedQuery && trimmedQuery) ||
-            prevState.page !== this.state.page
-        ) {
-            this.setState({ isLoading: true });
-            ImageService.fetchImagesByKeyword(trimmedQuery, this.state.page)
-                .then(data => {
-                    this.setState(prev => {
-                        if (prev.images.length)
-                            return {
-                                images: [...prev.images, ...data.hits],
-                                totalHits: data.totalHits,
-                            };
-                        return { images: data.hits, totalHits: data.totalHits };
-                    });
-                })
-                .catch(err => this.setState({ error: err.data }))
-                .finally(() => this.setState({ isLoading: false }));
+    const handleLoadMoreBtn = () => {
+        const limit = countTotalPage(totalHits, PER_PAGE);
+        if (page === limit) {
+            setLimit(false);
         }
-    }
-
-    handleSearchSubmit = searchQuery => {
-        this.setState({ searchQuery, page: 1, images: [], limit: true });
+        setPage(page + 1);
     };
 
-    handleLoadMoreBtn = () => {
-        const limit = countTotalPage(this.state.totalHits, PER_PAGE);
-        if (this.state.page === limit) {
-            this.setState({ limit: false });
-        }
-        this.setState({ page: this.state.page + 1 });
+    const getLargeImageUrl = largeImageUrl => {
+        setLargeImageUrl(largeImageUrl);
+        setIsModalVisible(true);
     };
 
-    setLargeImageUrl = largeImageUrl => {
-        this.setState({ largeImageUrl, isModalVisible: true });
+    const hideModal = () => {
+        setIsModalVisible(false);
     };
 
-    hideModal = () => {
-        this.setState({ isModalVisible: false });
-    };
-
-    render() {
-        const {
-            images,
-            error,
-            isLoading,
-            isModalVisible,
-            largeImageUrl,
-            totalHits,
-            limit,
-        } = this.state;
-
-        return (
-            <>
-                <Searchbar onSubmit={this.handleSearchSubmit} />
-                {error && <h4>{error}</h4>}
-                {Boolean(images.length) && (
-                    <Gallery>
-                        {images.map(image => (
-                            <ImageGalleryItem
-                                key={image.id}
-                                url={image.webformatURL}
-                                largeImageURL={image.largeImageURL}
-                                tags={image.tags}
-                                setLargeImageUrl={this.setLargeImageUrl}
-                            />
-                        ))}
-                    </Gallery>
-                )}
-                {totalHits === 0 && <h4>No images found</h4>}
-                {isLoading && <Loader />}
-                {Boolean(images.length) && !isLoading && limit && (
-                    <Button onClick={this.handleLoadMoreBtn}>Load more</Button>
-                )}
-                {isModalVisible && (
-                    <Modal
-                        largeImageUrl={largeImageUrl}
-                        hideModal={this.hideModal}
-                    />
-                )}
-            </>
-        );
-    }
-}
+    return (
+        <>
+            <Searchbar onSubmit={handleSearchSubmit} />
+            {error && <h4>{error}</h4>}
+            {Boolean(images.length) && (
+                <Gallery>
+                    {images.map(image => (
+                        <ImageGalleryItem
+                            key={image.id}
+                            url={image.webformatURL}
+                            largeImageURL={image.largeImageURL}
+                            tags={image.tags}
+                            setLargeImageUrl={getLargeImageUrl}
+                        />
+                    ))}
+                </Gallery>
+            )}
+            {totalHits === 0 && <h4>No images found</h4>}
+            {isLoading && <Loader />}
+            {Boolean(images.length) && !isLoading && limit && (
+                <Button onClick={handleLoadMoreBtn}>Load more</Button>
+            )}
+            {isModalVisible && (
+                <Modal largeImageUrl={largeImageUrl} hideModal={hideModal} />
+            )}
+        </>
+    );
+};
 
 export default ImageGallery;

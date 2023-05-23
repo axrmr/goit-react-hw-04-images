@@ -1,17 +1,11 @@
+import PropTypes from 'prop-types';
 import { FcSearch } from 'react-icons/fc';
 import Header from './Searchbar.styled';
 
 const Searchbar = ({ onSubmit }) => {
-    const handleSubmit = e => {
-        e.preventDefault();
-        const { searchQuery } = e.currentTarget;
-        onSubmit(searchQuery.value);
-        e.currentTarget.reset();
-    };
-
     return (
         <Header className='searchbar'>
-            <form className='form' onSubmit={handleSubmit}>
+            <form className='form' onSubmit={onSubmit}>
                 <div className='inp-wrapper'>
                     <input
                         className='input'
@@ -29,6 +23,10 @@ const Searchbar = ({ onSubmit }) => {
             </form>
         </Header>
     );
+};
+
+Searchbar.propTypes = {
+    onSubmit: PropTypes.func,
 };
 
 export default Searchbar;
